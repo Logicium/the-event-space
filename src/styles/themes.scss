@@ -1,0 +1,48 @@
+@use 'core' as *;
+
+/* Bespoke marquee-template overrides on top of @apotome/archetype-shared base styles.
+   Most chrome (header, footer, hero, about, gallery, testimonials, contact) is inherited.
+   Only event-specific component polish lives here. */
+
+/* Status pill colors per event status (used across EventCard + calendar). */
+.ap-event-status {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: var(--ap-font-mono, var(--ap-font-body));
+  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+.ap-event-status[data-status='on-sale']   { color: var(--ap-primary); }
+.ap-event-status[data-status='few-left']  { color: #b45309; }
+.ap-event-status[data-status='sold-out']  { color: #991b1b; }
+.ap-event-status[data-status='free']      { color: #15803d; }
+.ap-event-status[data-status='cancelled'],
+.ap-event-status[data-status='postponed'] { color: var(--ap-ink-muted); text-decoration: line-through; }
+
+/* Vibrant theme polish: heavier sticker treatment for the status pill. */
+[data-theme='vibrant'] .ap-event-status {
+  background: var(--ap-ink); color: var(--ap-surface);
+  border: 2px solid var(--ap-ink); border-radius: 0;
+  box-shadow: 3px 3px 0 var(--ap-accent);
+  font-weight: 700;
+}
+[data-theme='vibrant'] .ap-event-status[data-status='free']     { background: #15803d; color: #fff; border-color: #15803d; }
+[data-theme='vibrant'] .ap-event-status[data-status='sold-out'] { background: #991b1b; color: #fff; border-color: #991b1b; }
+[data-theme='vibrant'] .ap-event-status[data-status='few-left'] { background: #b45309; color: #fff; border-color: #b45309; }
+
+/* Studio theme: hairline + mono treatment. */
+[data-theme='studio'] .ap-event-status {
+  border-radius: 2px; background: transparent;
+  letter-spacing: 0.16em;
+}
+
+/* Heritage theme: serif italic, no border. */
+[data-theme='heritage'] .ap-event-status {
+  border: none; background: transparent;
+  font-family: var(--ap-font-heading); font-style: italic; text-transform: none;
+  letter-spacing: 0; padding-left: 0;
+  font-size: 0.95rem;
+}
+[data-theme='heritage'] .ap-event-status::before { content: '— '; }

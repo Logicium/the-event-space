@@ -1,0 +1,159 @@
+{
+  "template": "marquee",
+  "license": "Unsplash License",
+  "generatedAt": "2026-07-01T03:08:37.049Z",
+  "photos": [
+    {
+      "file": "hero-marquee.jpg",
+      "photographer": "Aditya Bnrd",
+      "photographerUrl": "https://unsplash.com/@adityabunardi?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/a-theater-marquee-lit-up-at-night-98gXnjmq4Vw?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "98gXnjmq4Vw",
+      "alt": "Cinder Hall front entrance at dusk, marquee lit"
+    },
+    {
+      "file": "about-house.jpg",
+      "photographer": "ARTO SURAJ",
+      "photographerUrl": "https://unsplash.com/@artosuraj?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/empty-theater-with-rows-of-seats-and-stage-kFCor16bqq4?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "kFCor16bqq4",
+      "alt": "Wide interior of the hall set for a concert"
+    },
+    {
+      "file": "show-01.jpg",
+      "photographer": "Abstral Official",
+      "photographerUrl": "https://unsplash.com/@abstralofficial?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/a-woman-singing-into-a-microphone-while-playing-guitar-fnYHoNUJUNQ?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "fnYHoNUJUNQ",
+      "alt": "Folk trio mid-set"
+    },
+    {
+      "file": "show-02.jpg",
+      "photographer": "Austin",
+      "photographerUrl": "https://unsplash.com/@austin_7792?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/busy-street-scene-with-people-crossing-at-night-rE7mkkVb-l8?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "rE7mkkVb-l8",
+      "alt": "Audience lining up under the marquee"
+    },
+    {
+      "file": "show-03.jpg",
+      "photographer": "Tony Pham",
+      "photographerUrl": "https://unsplash.com/@tonyphamvn?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/people-gathering-on-green-grass-field-during-daytime-FUmDe-Bx1LA?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "FUmDe-Bx1LA",
+      "alt": "Crowd at a festival afternoon set"
+    },
+    {
+      "file": "show-04.jpg",
+      "photographer": "Zalfa Imani",
+      "photographerUrl": "https://unsplash.com/@zalfaimani?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/woman-in-black-coat-standing-in-front-of-paintings-1xp5VxvyKL0?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "1xp5VxvyKL0",
+      "alt": "Family afternoon in the gallery"
+    },
+    {
+      "file": "show-05.jpg",
+      "photographer": "Ryo Tanaka",
+      "photographerUrl": "https://unsplash.com/@callas1900?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/man-sitting-amongst-easels-outside-art-shop-KT6ijeedVFg?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "KT6ijeedVFg",
+      "alt": "Painter at work during a gallery opening"
+    },
+    {
+      "file": "show-06.jpg",
+      "photographer": "Larisa Birta",
+      "photographerUrl": "https://unsplash.com/@larisabirta?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/people-playing-violin-inside-dim-room-slbOcNlWNHA?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "slbOcNlWNHA",
+      "alt": "String quartet rehearsing in the hall"
+    },
+    {
+      "file": "event-rosalind.jpg",
+      "photographer": "Julio Rionaldo",
+      "photographerUrl": "https://unsplash.com/@juliorionaldo?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/person-playing-violin-xIoze9dH4WI?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "xIoze9dH4WI",
+      "alt": "String quartet performing"
+    },
+    {
+      "file": "event-mariachi.jpg",
+      "photographer": "Diego Sulivan",
+      "photographerUrl": "https://unsplash.com/@sulivan?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/photo-of-band-playing-on-stage-iDa5Mf7GqRg?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "iDa5Mf7GqRg",
+      "alt": "Mariachi band on stage in low light"
+    },
+    {
+      "file": "event-rivera.jpg",
+      "photographer": "Andrés Gómez",
+      "photographerUrl": "https://unsplash.com/@andresloquesea?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/red-rock-formations-under-a-blue-sky-with-clouds-31DS69FYoCg?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "31DS69FYoCg",
+      "alt": "Landscape painting against red sky"
+    },
+    {
+      "file": "event-openmic.jpg",
+      "photographer": "Matthias Wagner",
+      "photographerUrl": "https://unsplash.com/@matwag?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/black-and-gray-microphone-on-black-stand-QrqeusbpFMM?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "QrqeusbpFMM",
+      "alt": "Microphone on the empty stage"
+    },
+    {
+      "file": "event-festival.jpg",
+      "photographer": "A J.",
+      "photographerUrl": "https://unsplash.com/@antoinejulien?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/people-watching-concert-during-day-5xNhTYbNnj4?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "5xNhTYbNnj4",
+      "alt": "Sun-drenched festival crowd in front of a small stage"
+    },
+    {
+      "file": "event-gala.jpg",
+      "photographer": "Filip Rankovic Grobgaard",
+      "photographerUrl": "https://unsplash.com/@filipgrobgaard?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/two-women-smiling-at-a-social-gathering-3H3Ts-5sjq0?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "3H3Ts-5sjq0",
+      "alt": "Patrons in the lobby for the annual gala"
+    },
+    {
+      "file": "series-firstfri.jpg",
+      "photographer": "Laura Cleffmann",
+      "photographerUrl": "https://unsplash.com/@cloudett?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/two-men-standing-in-an-art-gallery-looking-at-paintings-7PyXLYLtvI8?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "7PyXLYLtvI8",
+      "alt": "First-Friday gallery walk crowd"
+    },
+    {
+      "file": "series-openmic.jpg",
+      "photographer": "israel palacio",
+      "photographerUrl": "https://unsplash.com/@othentikisra?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/bokeh-photography-of-condenser-microphone-Y20JJ_ddy9M?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "Y20JJ_ddy9M",
+      "alt": "Open mic night"
+    },
+    {
+      "file": "performer-rosalind.jpg",
+      "photographer": "Johanna Vogt",
+      "photographerUrl": "https://unsplash.com/@johanna_vogt?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/brown-violin-H7kVzJgum3M?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "H7kVzJgum3M",
+      "alt": "The Rosalind Quartet"
+    },
+    {
+      "file": "performer-juno.jpg",
+      "photographer": "Jonah Brown",
+      "photographerUrl": "https://unsplash.com/@jonahbrown?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/man-in-black-t-shirt-standing-near-glass-window-during-daytime-KiTrEBpXdkY?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "KiTrEBpXdkY",
+      "alt": "Juno Castaño, songwriter in residence"
+    },
+    {
+      "file": "performer-rivera.jpg",
+      "photographer": "Europeana",
+      "photographerUrl": "https://unsplash.com/@europeana?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/artist-in-a-hat-painting-on-an-easel-ZZVhj8zZx1Y?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "ZZVhj8zZx1Y",
+      "alt": "Lucía Rivera, featured visual artist"
+    }
+  ]
+}

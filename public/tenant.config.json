@@ -1,0 +1,43 @@
+{
+  "_note": "This file is overwritten by the Apotome provisioning service during site generation. Edit your live content from /admin.",
+  "archetype": "marquee",
+  "brand": "Sample Event Space",
+  "tagline": "A place to gather & witness.",
+  "blurb": "An events-focused site — live music, art openings, festivals, or whatever you put on the calendar.",
+  "theme": "heritage",
+  "swatch": "ember",
+  "variant": "essentials",
+  "contact": {
+    "address": "",
+    "phone": "",
+    "email": "",
+    "mapEmbedUrl": ""
+  },
+  "hours": [],
+  "ticketingUrl": "",
+  "newsletterUrl": "",
+  "photos": {
+    "hero": { "src": "/photos/hero-marquee.jpg", "alt": "Front of the venue at night" },
+    "about": { "src": "/photos/about-space.jpg", "alt": "Inside the space" },
+    "gallery": []
+  },
+  "story": {
+    "title": "Our story",
+    "paragraphs": [],
+    "facts": []
+  },
+  "venue": {
+    "capacity": "",
+    "ageRestrictions": "",
+    "parking": "",
+    "accessibility": "",
+    "foodAndDrink": "",
+    "rentalUrl": "",
+    "rentalBlurb": ""
+  },
+  "events": [],
+  "series": [],
+  "performers": [],
+  "testimonials": [],
+  "social": []
+}
