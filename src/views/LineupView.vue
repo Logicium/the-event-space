@@ -7,9 +7,9 @@ import LineupSection from '../components/sections/LineupSection.vue'
 <template>
   <HeroSection
     subpage
-    eyebrow="Lineup"
-    title="Artists & company"
-    subtitle="The people who make this place go — residents, regulars, and the company behind the curtain."
+    :eyebrow="siteConfig.sections.lineupPage.eyebrow"
+    :title="siteConfig.sections.lineupPage.title"
+    :subtitle="siteConfig.sections.lineupPage.subtitle"
     :image="siteConfig.photos.about.src"
     :image-alt="siteConfig.photos.about.alt"
   />

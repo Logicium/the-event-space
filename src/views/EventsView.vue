@@ -15,27 +15,27 @@ const isPortfolio = computed(() => variantAtLeast(liveVariant.value, 'portfolio'
 <template>
   <HeroSection
     subpage
-    eyebrow="Events"
-    title="Every show on the calendar"
-    subtitle="Tickets open the moment a show is announced. Sign up for our newsletter to hear about new dates first."
+    :eyebrow="siteConfig.sections.eventsPage.eyebrow"
+    :title="siteConfig.sections.eventsPage.title"
+    :subtitle="siteConfig.sections.eventsPage.subtitle"
     :image="siteConfig.photos.hero.src"
     :image-alt="siteConfig.photos.hero.alt"
   />
   <EventCalendarSection
     v-if="isPortfolio"
-    eyebrow="Month view"
+    :eyebrow="siteConfig.sections.eventsPage.calendarEyebrow"
     :events="siteConfig.events"
   />
   <EventsListSection
-    title="All upcoming events"
+    :title="siteConfig.sections.eventsPage.listTitle"
     :events="siteConfig.events"
     :venue-label="siteConfig.contact.address"
     filterable
     show-archive
   />
   <SeriesSection
-    eyebrow="Recurring"
-    title="Programs that come back around"
+    :eyebrow="siteConfig.sections.eventsPage.seriesEyebrow"
+    :title="siteConfig.sections.eventsPage.seriesTitle"
     :series="siteConfig.series"
   />
 </template>

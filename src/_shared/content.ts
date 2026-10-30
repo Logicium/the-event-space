@@ -14,7 +14,9 @@ export interface SocialLink { label: string; href: string }
 export interface HoursRow { day: string; open: string }
 
 /** Mesa (restaurant) */
-export interface MenuItem { name: string; description?: string; price: string; tags?: string[] }
+/** One size of a dish ("12\"" at "$14"). A dish with `sizes` renders them in place of its single price. */
+export interface MenuItemSize { label: string; price: string }
+export interface MenuItem { name: string; description?: string; price: string; sizes?: MenuItemSize[]; tags?: string[] }
 export interface MenuCategory { name: string; description?: string; items: MenuItem[] }
 export interface MesaPhotos { hero: PhotoSlot; about: PhotoSlot; gallery: PhotoSlot[] }
 export interface MesaSiteConfig {
@@ -71,7 +73,10 @@ export interface Product {
   badge?: string
   url?: string
 }
-export interface Category { name: string; image: string; imageAlt?: string; url?: string; count?: number }
+/** A product category tile. `children` are its subcategories, shown in the
+ *  catalog nav dropdown and used to deep-link the shop (`/shop?category=…&sub=…`). */
+export interface CategoryChild { name: string; url?: string }
+export interface Category { name: string; image: string; imageAlt?: string; url?: string; count?: number; children?: CategoryChild[] }
 export interface VaultPhotos { hero: PhotoSlot; about: PhotoSlot; storefront: PhotoSlot; gallery: PhotoSlot[] }
 export interface VaultSiteConfig {
   brand: string
@@ -86,6 +91,8 @@ export interface VaultSiteConfig {
   story: Story
   featured: Product[]
   categories: Category[]
+  /** Header menu for the shop: plain links, or a catalog dropdown built from `categories`. */
+  navMenu?: 'links' | 'catalog'
   testimonials: Testimonial[]
   shopUrl: string
   social: SocialLink[]

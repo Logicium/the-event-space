@@ -2,12 +2,12 @@
 import { Users, Accessibility, Car, Utensils, Sparkles } from 'lucide-vue-next'
 import type { VenueDetail } from '../../config/site.config'
 
-defineProps<{
+withDefaults(defineProps<{
   eyebrow?: string
   title?: string
   intro?: string
   venue: VenueDetail
-}>()
+}>(), { title: 'About the venue' })
 </script>
 
 <template>
@@ -15,7 +15,7 @@ defineProps<{
     <div class="ap-container">
       <header class="ap-section-head">
         <span v-if="eyebrow" class="ap-eyebrow">{{ eyebrow }}</span>
-        <h2>{{ title || 'About the venue' }}</h2>
+        <h2>{{ title }}</h2>
         <p v-if="intro" class="ap-venue__intro">{{ intro }}</p>
       </header>
 

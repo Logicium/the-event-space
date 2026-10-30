@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { siteConfig } from './config/site.config'
 import { useSiteTheme } from '@apotome/archetype-shared/composables/useSiteTheme'
+import { useSiteSeo } from '@apotome/archetype-shared/platform/seo'
 import { useImagePreload } from '@apotome/archetype-shared/composables/useImagePreload'
 import { useApScrollbar } from '@apotome/archetype-shared/composables/useApScrollbar'
 import { usePreferences } from '@apotome/archetype-shared/composables/usePreferences'
@@ -13,6 +14,25 @@ import AppLoader from '@apotome/archetype-shared/components/AppLoader.vue'
 import ThemeSwitcher from '@apotome/archetype-shared/components/ThemeSwitcher.vue'
 
 const { initFromConfig } = useSiteTheme()
+
+/* Title, description, social cards, favicon and LocalBusiness data follow the
+   owner's content (brand, tagline, blurb, contact, hero photo) and change per
+   page; dashboard, checkout and order pages stay out of search. */
+useSiteSeo({
+  site: siteConfig,
+  archetype: 'venue',
+  page: (route) => {
+    const s = siteConfig.sections
+    switch (route.name) {
+      case 'events': return { title: s.eventsPage.title, description: s.eventsPage.subtitle }
+      case 'tickets': return { title: s.ticketsPage.title, description: s.ticketsPage.subtitle }
+      case 'visit': return { title: s.visitPage.title, description: s.visitPage.subtitle }
+      case 'lineup': return { title: s.lineupPage.title, description: s.lineupPage.subtitle }
+      case 'gallery': return { title: s.galleryPage.title }
+      default: return null
+    }
+  },
+})
 const { isReady, progress, loaded, total, label, preloadCritical } = useImagePreload()
 
 onMounted(async () => {

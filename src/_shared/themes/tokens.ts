@@ -12,7 +12,7 @@ export type HoursStyle = '1' | '2' | '3' | '4' | '5'
 export type GalleryStyle = '1' | '2' | '3' | '4' | '5'
 export type ReviewsStyle = '1' | '2' | '3' | '4' | '5'
 export type SubheroStyle = '1' | '2' | '3' | '4' | '5'
-export type SiteStyle = '1' | '2' | '3'
+export type SiteStyle = '1' | '2' | '3' | '4' | '5'
 export type AboutStyle = '1' | '2' | '3' | '4'
 export type NavStyle = '1' | '2' | '3' | '4'
 export type Alignment = 'left' | 'center'
@@ -166,6 +166,51 @@ export interface ThemeTokens {
   fontUrl?: string
   /** Heading weight: themes vary intentionally. */
   headingWeight: number
+  /** Optional accent face (italic serif emphasis, captions). Falls back to fontHeading. */
+  fontAccent?: string
+  /** Motion tempo. Themes without it get the shared defaults. */
+  motion?: ThemeMotion
+}
+
+export type RevealKind = 'lines' | 'mask' | 'fade' | 'up' | 'scale'
+
+export interface ThemeMotion {
+  /** Lenis inertial scrolling (desktop, non-reduced only). */
+  smooth: boolean
+  /** CSS easing for reveals and hovers. */
+  ease: string
+  /** Base reveal duration in ms. */
+  dur: number
+  /** The reveal the theme's headings use. */
+  reveal: RevealKind
+}
+
+export const DEFAULT_MOTION: ThemeMotion = {
+  smooth: false,
+  ease: 'cubic-bezier(0.16, 1, 0.3, 1)',
+  dur: 900,
+  reveal: 'up',
+}
+
+/** Every style axis the picker controls, as a plain record. */
+export interface StyleAxes {
+  heroStyle: HeroStyle
+  footerStyle: FooterStyle
+  contactStyle: ContactStyle
+  hoursStyle: HoursStyle
+  galleryStyle: GalleryStyle
+  reviewsStyle: ReviewsStyle
+  subheroStyle: SubheroStyle
+  siteStyle: SiteStyle
+  aboutStyle: AboutStyle
+  navStyle: NavStyle
+  alignment: Alignment
+}
+
+export const BASE_STYLE_AXES: StyleAxes = {
+  heroStyle: '1', footerStyle: '1', contactStyle: '1', hoursStyle: '1',
+  galleryStyle: '1', reviewsStyle: '1', subheroStyle: '1', siteStyle: '1',
+  aboutStyle: '1', navStyle: '1', alignment: 'left',
 }
 
 /**
@@ -200,4 +245,25 @@ export function resolveVariant(v: string | undefined | null): SiteVariant {
 
 export function variantAtLeast(variant: SiteVariant | string, min: SiteVariant): boolean {
   return VARIANT_RANK[resolveVariant(variant as string)] >= VARIANT_RANK[min]
+}
+
+/**
+ * The single place that decides which tier a site PAID for.
+ *
+ * Distinct from `resolveVariant`, which says how the site is currently laid
+ * out. `Site.plan` has held two kinds of value: catalogue SKU ids from the
+ * initial purchase (`website-extended`) and tier names from the upgrade flow
+ * (`portfolio`). Both must resolve the same way, or an owner who bought
+ * Portfolio outright is shown the Essentials limits they did not pay for.
+ *
+ * Anything unrecognised is Essentials — the tier that grants nothing — so a
+ * typo can never hand out paid capacity.
+ */
+const PORTFOLIO_PLANS = new Set([
+  'portfolio', 'extended', 'premium', 'pro',
+  'website-extended', 'website-premium', 'website-portfolio-upgrade',
+])
+
+export function resolvePlanTier(plan: string | null | undefined): SiteVariant {
+  return PORTFOLIO_PLANS.has((plan ?? '').trim().toLowerCase()) ? 'portfolio' : 'essentials'
 }

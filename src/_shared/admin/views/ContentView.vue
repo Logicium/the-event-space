@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import { contentClient } from '../../platform/contentClient'
 import { useActiveSiteStore } from '../../platform/activeSiteStore'
 import { tabsForArchetype, type TabId } from '../contentSchemas'
+import { withSectionDefaults } from '../../sectionDefaults'
 import AiCopyButton from '../components/AiCopyButton.vue'
 import MapSearchPicker from '../components/MapSearchPicker.vue'
 import TextAreaField from '../../components/forms/TextAreaField.vue'
@@ -13,10 +14,12 @@ import ChipsInput from '../components/inputs/ChipsInput.vue'
 import IconInput from '../components/inputs/IconInput.vue'
 import SocialIconInput from '../components/inputs/SocialIconInput.vue'
 import MenuScanButton from '../components/MenuScanButton.vue'
+import SegmentedInput from '../components/inputs/SegmentedInput.vue'
+import { combineSizedItems } from '../../platform/menuSizes'
 import { useToast } from '../composables/useToast'
 
 interface PhotoSlot { src: string; alt?: string; caption?: string }
-interface MenuItem { name: string; description?: string; price: string; tags?: string[]; image?: string }
+interface MenuItem { name: string; description?: string; price: string; sizes?: Array<{ label: string; price: string }>; tags?: string[]; image?: string }
 interface MenuCategory { name: string; description?: string; items: MenuItem[]; image?: string }
 interface HourRow { day: string; open: string }
 interface SocialLink { label: string; href: string; icon?: string }
@@ -31,7 +34,8 @@ interface AmenityItem { icon?: string; label: string; description?: string }
 interface ServiceItem { name: string; description?: string; price?: string; icon?: string }
 interface CapabilityItem { label: string; value: string }
 interface ProductItem { name: string; price?: string; blurb?: string; badge?: string; image?: string }
-interface CategoryItem { name: string; image?: string; count?: string }
+interface SubcategoryItem { name: string; url?: string }
+interface CategoryItem { name: string; image?: string; count?: string; children?: SubcategoryItem[] }
 interface EventItem   { id?: string; title: string; date: string; startTime?: string; category?: string; priceLabel?: string; image?: string; blurb?: string }
 interface PillarItem  { title: string; body?: string }
 
@@ -58,12 +62,18 @@ interface SiteContent {
   mission: { statement: string; pillars: PillarItem[] }
   testimonials: Testimonial[]
   reviewsSource: 'manual' | 'google'
+  /** Shop header menu: plain links or a catalog dropdown built from categories. */
+  navMenu: 'links' | 'catalog'
   social: SocialLink[]
 }
 
 function blankContent(): SiteContent {
   return {
-    brand: '', tagline: '', blurb: '', favicon: '', theme: 'atlas', swatch: 'onyx-light', variant: 'essentials',
+    // Theme, swatch and variant stay EMPTY until the site's own payload supplies
+    // them: the theme picker owns these, and many sites run on the template's
+    // build-time theme with no `theme` key published at all. Writing defaults
+    // here silently re-themed such sites to Atlas on their first content save.
+    brand: '', tagline: '', blurb: '', favicon: '', theme: '', swatch: '', variant: '',
     contact: { address: '', phone: '', email: '', mapEmbedUrl: '' },
     hours: [{ day: '', open: '' }],
     photos: { hero: { src: '', alt: '' }, about: { src: '', alt: '' }, gallery: [] },
@@ -79,6 +89,7 @@ function blankContent(): SiteContent {
     mission:  { statement: '', pillars: [] },
     testimonials: [],
     reviewsSource: 'manual',
+    navMenu: 'links',
     social: [],
   }
 }
@@ -248,7 +259,13 @@ function applyPayload(raw: Record<string, unknown>) {
   if (p.hours    !== undefined) replaceRows(c.hours, asRows<HourRow>(p.hours))
   if (p.photos   !== undefined) Object.assign(c.photos,  p.photos)
   if (p.story    !== undefined) Object.assign(c.story,   p.story)
-  if (p.menu     !== undefined) Object.assign(c.menu,    p.menu)
+  if (p.menu     !== undefined) {
+    Object.assign(c.menu, p.menu)
+    // Proactively tidy legacy per-size items ("Pepperoni 12\"" three times
+    // over) into one dish with sizes. The owner sees a toast, the sizes UI,
+    // and a per-dish "Use one price" to undo; the change persists on save.
+    autoCombineMenuSizes()
+  }
   if (p.rooms    !== undefined) replaceRows(c.rooms, migrateRooms(p.rooms))
   if (p.amenities !== undefined) replaceRows(c.amenities, asRows<AmenityItem>(p.amenities))
   if (p.services !== undefined) replaceRows(c.services, migrateServices(p.services))
@@ -260,6 +277,7 @@ function applyPayload(raw: Record<string, unknown>) {
   if (p.mission  !== undefined) Object.assign(c.mission,  p.mission)
   if (p.testimonials !== undefined) replaceRows(c.testimonials, asRows<Testimonial>(p.testimonials))
   if (p.reviewsSource !== undefined) c.reviewsSource = (p.reviewsSource === 'google' ? 'google' : 'manual')
+  if (p.navMenu !== undefined) c.navMenu = (p.navMenu === 'catalog' ? 'catalog' : 'links')
   if (p.social   !== undefined) replaceRows(c.social, asRows<SocialLink>(p.social))
 }
 
@@ -267,7 +285,7 @@ function applyPayload(raw: Record<string, unknown>) {
     verbatim on save so publishing content never clobbers them, and the
     Content page can edit the per-section heading text directly. */
 const extraPayload = ref<Record<string, unknown>>({})
-const MODELED_KEYS = new Set(['brand', 'tagline', 'blurb', 'favicon', 'theme', 'swatch', 'variant', 'contact', 'hours', 'photos', 'story', 'menu', 'rooms', 'amenities', 'services', 'capabilities', 'featured', 'products', 'categories', 'events', 'mission', 'testimonials', 'reviewsSource', 'social'])
+const MODELED_KEYS = new Set(['brand', 'tagline', 'blurb', 'favicon', 'theme', 'swatch', 'variant', 'contact', 'hours', 'photos', 'story', 'menu', 'rooms', 'amenities', 'services', 'capabilities', 'featured', 'products', 'categories', 'events', 'mission', 'testimonials', 'reviewsSource', 'navMenu', 'social'])
 
 async function loadDraft() {
   if (!siteId.value) return
@@ -279,9 +297,16 @@ async function loadDraft() {
     // through when switching sites in the header.
     Object.assign(c, blankContent())
     applyPayload(d.payload)
-    extraPayload.value = Object.fromEntries(
+    const extras = Object.fromEntries(
       Object.entries(d.payload ?? {}).filter(([k]) => !MODELED_KEYS.has(k)),
     )
+    // Section headings live in the template's site.config until someone edits
+    // them, so a fresh draft has no \sections\ key and the editor below would
+    // render nothing — leaving headings like the hours note uneditable. Seed
+    // the known build-time defaults so they show up as ordinary fields.
+    const seeded = withSectionDefaults(archetype.value, extras.sections)
+    if (seeded) extras.sections = seeded
+    extraPayload.value = extras
   } catch (e) { toast.error(e instanceof Error ? e.message : String(e)) }
 }
 
@@ -306,6 +331,10 @@ function payloadForSave(): Record<string, unknown> {
   const keep = new Set(ARCHETYPE_KEYS[(archetype.value || '').toLowerCase()] ?? ALL_ARCHETYPE_KEYS)
   for (const k of ALL_ARCHETYPE_KEYS) {
     if (!keep.has(k)) delete payload[k]
+  }
+  // Never invent a look the owner did not publish (see blankContent).
+  for (const k of ['theme', 'swatch', 'variant']) {
+    if (payload[k] === '' || payload[k] === undefined) delete payload[k]
   }
   // Templates key events by id — derive one from the title when absent.
   if (Array.isArray(payload.events)) {
@@ -380,6 +409,36 @@ function removeCategory(i: number)    { c.menu.categories.splice(i, 1) }
 function addMenuItem(cat: MenuCategory)              { cat.items.push({ name: '', description: '', price: '', tags: [], image: '' }) }
 function removeMenuItem(cat: MenuCategory, i: number){ cat.items.splice(i, 1) }
 
+/* ── Sizes on a dish ──
+   One item, several prices ("12\" / 16\" / 18\""). With sizes present the
+   single price field hides; clearing the last size brings it back. */
+function addSizes(item: MenuItem) {
+  item.sizes = [{ label: '', price: item.price || '' }, { label: '', price: '' }]
+  item.price = ''
+}
+function addSize(item: MenuItem)              { item.sizes?.push({ label: '', price: '' }) }
+function removeSize(item: MenuItem, i: number) {
+  item.sizes?.splice(i, 1)
+  if (!item.sizes?.length) removeSizes(item)
+}
+function removeSizes(item: MenuItem) {
+  item.price = item.sizes?.find(sz => sz.price)?.price ?? item.price
+  delete item.sizes
+}
+
+/** Legacy menus list each size as its own dish. Merge those families into
+    single dishes with a `sizes` array as soon as they enter the editor. */
+function autoCombineMenuSizes(announce = true) {
+  const { categories, combined } = combineSizedItems(c.menu.categories)
+  if (!combined) return
+  c.menu.categories = categories as MenuCategory[]
+  if (announce) {
+    toast.success(combined === 1
+      ? 'Combined 1 dish listed in several sizes. Save to keep.'
+      : `Combined ${combined} dishes listed in several sizes. Save to keep.`)
+  }
+}
+
 /** Merge AI-scanned menu categories into the editor. Existing categories are
     kept; scanned categories with a matching name absorb the new items, and
     brand-new categories are appended. Images/tags are left for the owner to
@@ -404,6 +463,7 @@ function applyScannedMenu(scanned: ScannedMenu) {
       added++
     }
   }
+  if (added) autoCombineMenuSizes(false)
   toast.success(added ? `Added ${added} item${added === 1 ? '' : 's'} from your menu photo` : 'No menu items found in that image')
 }
 
@@ -420,6 +480,12 @@ function addProduct() { c.featured.push({ name: '', price: '', blurb: '', badge:
 function removeProduct(i: number) { c.featured.splice(i, 1) }
 function addShopCategory() { c.categories.push({ name: '', image: '', count: '' }) }
 function removeShopCategory(i: number) { c.categories.splice(i, 1) }
+function addSubcategory(cat: CategoryItem) { (cat.children ??= []).push({ name: '' }) }
+function removeSubcategory(cat: CategoryItem, i: number) { cat.children?.splice(i, 1) }
+const NAV_MENU_OPTIONS = [
+  { value: 'links', label: 'Links', hint: 'Home, Shop, Visit as plain links' },
+  { value: 'catalog', label: 'Catalog menu', hint: 'Shop opens a dropdown of your categories' },
+]
 function addEvent()   { c.events.push({ title: '', date: '', startTime: '', category: '', priceLabel: '', image: '', blurb: '' }) }
 function removeEvent(i: number) { c.events.splice(i, 1) }
 function addPillar()  { c.mission.pillars.push({ title: '', body: '' }) }
@@ -761,12 +827,24 @@ function stringFields(obj: Record<string, unknown>): Array<[string, string]> {
             <div class="menu-item__body">
               <div class="menu-item__row">
                 <input v-model="item.name" placeholder="Dish name" class="menu-item__name" />
-                <input v-model="item.price" placeholder="$0" class="menu-item__price" />
+                <input v-if="!item.sizes?.length" v-model="item.price" placeholder="$0" class="menu-item__price" />
                 <div class="menu-item__tags">
                   <ChipsInput :model-value="item.tags ?? []" placeholder="V, GF…" @update:model-value="(v: string[]) => item.tags = v" />
                 </div>
                 <button type="button" class="btn-remove btn-remove--icon" @click="removeMenuItem(cat, ii)">×</button>
               </div>
+              <div v-if="item.sizes?.length" class="menu-item__sizes">
+                <div v-for="(sz, si) in item.sizes" :key="si" class="menu-item__size-row">
+                  <input v-model="sz.label" placeholder="Size (12&quot;, Large…)" class="menu-item__size-label" />
+                  <input v-model="sz.price" placeholder="$0" class="menu-item__price" />
+                  <button type="button" class="btn-remove btn-remove--icon" @click="removeSize(item, si)">×</button>
+                </div>
+                <div class="menu-item__size-actions">
+                  <button type="button" class="btn-add btn-add--indent" @click="addSize(item)">+ Add size</button>
+                  <button type="button" class="menu-item__one-price" @click="removeSizes(item)">Use one price</button>
+                </div>
+              </div>
+              <button v-else type="button" class="menu-item__one-price" @click="addSizes(item)">+ Sizes</button>
               <TextAreaField v-model="item.description" :rows="2" :maxlength="160" placeholder="Description…" />
             </div>
           </div>
@@ -864,7 +942,10 @@ function stringFields(obj: Record<string, unknown>): Array<[string, string]> {
         </div>
         <button type="button" class="btn-add" @click="addProduct">+ Add product</button>
 
-        <p class="section-sub">Shop categories</p>
+        <p class="section-sub">Shop navigation</p>
+        <SegmentedInput v-model="c.navMenu" :options="NAV_MENU_OPTIONS" hint="The catalog menu lists every category below, with its subcategories, under Shop in the header. Like every setting here it goes live in seconds, as long as your site is on the latest version (a notice at the top of this page tells you when it is not)." />
+
+        <p class="section-sub">Shop categories <span class="hint">each can hold subcategories</span></p>
         <div v-for="(cat, i) in c.categories" :key="i" class="testimonial-row">
           <div class="row-2">
             <input v-model="cat.name" placeholder="Category name (e.g. Apparel)" />
@@ -876,6 +957,13 @@ function stringFields(obj: Record<string, unknown>): Array<[string, string]> {
             aspect="1 / 1"
             @update:model-value="(v: string) => cat.image = v"
           />
+          <div class="subcats">
+            <div v-for="(sub, si) in cat.children ?? []" :key="si" class="subcats__row">
+              <input v-model="sub.name" placeholder="Subcategory (e.g. Hats)" />
+              <button type="button" class="btn-remove btn-remove--icon" @click="removeSubcategory(cat, si)">×</button>
+            </div>
+            <button type="button" class="btn-add btn-add--indent" @click="addSubcategory(cat)">+ Add subcategory</button>
+          </div>
           <button type="button" class="btn-remove" @click="removeShopCategory(i)">Remove category</button>
         </div>
         <button type="button" class="btn-add" @click="addShopCategory">+ Add category</button>
@@ -1324,6 +1412,21 @@ button:hover { border-color: var(--adm-accent); color: var(--adm-accent); }
 .menu-cat__row { display: flex; align-items: center; gap: 0.5rem; }
 .menu-cat__fields input { margin-top: 0; }
 
+.subcats { display: flex; flex-direction: column; gap: 0.35rem; padding-left: 0.9rem; border-left: 2px solid var(--adm-border); }
+.subcats__row { display: flex; align-items: center; gap: 0.5rem; }
+.subcats__row input { margin-top: 0; min-height: 2.5rem; }
+.menu-item__sizes { display: flex; flex-direction: column; gap: 0.35rem; }
+.menu-item__size-row { display: flex; align-items: center; gap: 0.5rem; }
+.menu-item__size-row input { margin-top: 0; min-height: 2.5rem; }
+.menu-item__size-label { flex: 1 1 auto; min-width: 0; }
+.menu-item__size-actions { display: flex; align-items: center; gap: 0.9rem; }
+.menu-item__one-price {
+  align-self: flex-start;
+  background: none; border: none; padding: 0;
+  font: inherit; font-size: 0.78rem; font-weight: 600;
+  color: var(--adm-text-muted); cursor: pointer;
+}
+.menu-item__one-price:hover { color: var(--adm-accent); }
 .menu-item {
   display: grid; grid-template-columns: 72px 1fr; gap: 0.6rem;
   padding: 0.7rem; margin-bottom: 0.5rem;

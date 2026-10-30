@@ -16,9 +16,9 @@ const upcoming = computed(() => siteConfig.events.filter(e => !isPast(e.date)))
 <template>
   <HeroSection
     subpage
-    eyebrow="Tickets"
-    title="Get in"
-    subtitle="Most events ticket through our partner platform. For group requests, accessibility, or holds — reach out directly."
+    :eyebrow="siteConfig.sections.ticketsPage.eyebrow"
+    :title="siteConfig.sections.ticketsPage.title"
+    :subtitle="siteConfig.sections.ticketsPage.subtitle"
     :image="siteConfig.photos.hero.src"
     :image-alt="siteConfig.photos.hero.alt"
   />
@@ -26,21 +26,21 @@ const upcoming = computed(() => siteConfig.events.filter(e => !isPast(e.date)))
   <template v-else>
     <div class="ap-container ap-tickets__cta">
       <a v-if="siteConfig.ticketingUrl" :href="siteConfig.ticketingUrl" target="_blank" rel="noopener" class="ap-btn">
-        Get tickets
+        {{ siteConfig.sections.ticketsPage.ctaLabel }}
       </a>
-      <p>Tickets are also available at the door when capacity allows.</p>
+      <p>{{ siteConfig.sections.ticketsPage.doorNote }}</p>
     </div>
     <EventsListSection
-      eyebrow="On sale now"
-      title="Pick your night"
+      :eyebrow="siteConfig.sections.ticketsPage.listEyebrow"
+      :title="siteConfig.sections.ticketsPage.listTitle"
       :events="upcoming"
       :venue-label="siteConfig.contact.address"
     />
   </template>
   <ContactSection
-    eyebrow="Get in touch"
-    title="Group sales, holds, or access requests"
-    intro="Tell us the event and how many spots; we'll get back within one business day."
+    :eyebrow="siteConfig.sections.contact.eyebrow"
+    :title="siteConfig.sections.contact.title"
+    :intro="siteConfig.sections.contact.intro"
     :address="siteConfig.contact.address"
     :phone="siteConfig.contact.phone"
     :email="siteConfig.contact.email"

@@ -1,11 +1,13 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { contentClient, type ShopConfigDTO, type ShopProductDTO, type ShopProductInput, type ShopOrderDTO } from '../../platform/contentClient'
+import FulfillmentPanel from '../components/FulfillmentPanel.vue'
 import { useActiveSiteStore } from '../../platform/activeSiteStore'
 import MoneyInput from '../components/inputs/MoneyInput.vue'
 import NumberInput from '../components/inputs/NumberInput.vue'
 import ToggleInput from '../components/inputs/ToggleInput.vue'
 import SelectInput from '../components/inputs/SelectInput.vue'
+import SegmentedInput from '../components/inputs/SegmentedInput.vue'
 import ImageInput from '../components/inputs/ImageInput.vue'
 
 const CURRENCY_OPTIONS = ['USD', 'CAD', 'EUR', 'GBP', 'MXN'].map(c => ({ value: c, label: c }))
@@ -24,7 +26,7 @@ const orders = ref<ShopOrderDTO[]>([])
 const addOnEnabled = ref(false)
 
 const newProduct = ref<ShopProductInput>({
-  sku: '', name: '', description: '', priceCents: 0, currency: 'USD', imageUrl: '', inventory: -1, active: true, sortOrder: 0,
+  sku: '', name: '', description: '', priceCents: 0, currency: 'USD', imageUrl: '', category: '', inventory: -1, active: true, sortOrder: 0,
 })
 
 async function load() {
@@ -50,6 +52,81 @@ async function load() {
   }
 }
 
+/* ── Products link ──
+   The shop catalog IS the site's Products content: the cards on the shop page
+   feed this list automatically, so owners don't retype what they already
+   wrote. Idempotent — matches on name, so re-running only adds what's new.
+   Prices/inventory are refined here. */
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+const syncing = ref(false)
+const syncStatus = ref<string | null>(null)
+
+async function syncFromContent() {
+  if (!siteId.value || syncing.value) return
+  syncing.value = true
+  syncStatus.value = null
+  try {
+    const d = await contentClient.getDraft(siteId.value)
+    // Current content stores these under `featured`; older vault drafts used
+    // `products: { items: [...] }`.
+    const payload = d.payload as {
+      featured?: Array<{ name?: string; price?: string; blurb?: string; image?: string }>
+      products?: { items?: Array<{ name?: string; price?: string; description?: string; photo?: string }> }
+    }
+    const list: Array<{ name?: string; price?: string; blurb?: string; image?: string }> =
+      payload.featured?.length
+        ? payload.featured
+        : (payload.products?.items ?? []).map(p => ({
+            name: p.name, price: p.price, blurb: p.description, image: p.photo,
+          }))
+
+    const existing = new Set(products.value.map(p => p.name.toLowerCase()))
+    let added = 0
+    for (const item of list) {
+      const name = (item.name ?? '').trim()
+      if (!name || existing.has(name.toLowerCase())) continue
+      const priceCents = Math.round((parseFloat(String(item.price ?? '').replace(/[^0-9.]/g, '')) || 0) * 100)
+      const created = await contentClient.shopCreateProduct(siteId.value, {
+        sku: (slugify(name) || `product-${added + 1}`).slice(0, 40),
+        name,
+        description: item.blurb?.trim() || undefined,
+        priceCents,
+        currency: resolved.value?.currency || 'USD',
+        imageUrl: item.image?.trim() || undefined,
+        inventory: -1,
+        active: true,
+        sortOrder: products.value.length + added,
+      })
+      products.value.push(created)
+      existing.add(name.toLowerCase())
+      added++
+    }
+    syncStatus.value = added
+      ? `Imported ${added} product${added === 1 ? '' : 's'} from your Products page.`
+      : 'Everything on your Products page is already sellable here.'
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    syncing.value = false
+  }
+}
+
+/** Known "Category / Sub" values from the products already filed. */
+const categoryOptions = computed(() => {
+  const set = new Set<string>()
+  for (const p of products.value) {
+    const c = p.category?.trim()
+    if (!c) continue
+    set.add(c)
+    const top = c.split(/\s*\/\s*/)[0]
+    if (top) set.add(top)
+  }
+  return [...set].sort()
+})
+
 async function addProduct() {
   if (!siteId.value) return
   const p = newProduct.value
@@ -62,12 +139,13 @@ async function addProduct() {
       priceCents: Math.max(0, Math.round(p.priceCents)),
       currency: p.currency || resolved.value?.currency || 'USD',
       imageUrl: p.imageUrl?.trim() || undefined,
+      category: p.category?.trim() || undefined,
       inventory: p.inventory ?? -1,
       active: p.active ?? true,
       sortOrder: p.sortOrder ?? 0,
     })
     products.value.push(created)
-    newProduct.value = { sku: '', name: '', description: '', priceCents: 0, currency: resolved.value?.currency || 'USD', imageUrl: '', inventory: -1, active: true, sortOrder: 0 }
+    newProduct.value = { sku: '', name: '', description: '', priceCents: 0, currency: resolved.value?.currency || 'USD', imageUrl: '', category: '', inventory: -1, active: true, sortOrder: 0 }
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e)
   }
@@ -83,6 +161,7 @@ async function saveProduct(p: ShopProductDTO) {
       priceCents: Math.max(0, Math.round(p.priceCents)),
       currency: p.currency,
       imageUrl: p.imageUrl?.trim() || undefined,
+      category: p.category?.trim() || '',
       inventory: p.inventory,
       active: p.active,
       sortOrder: p.sortOrder,
@@ -137,32 +216,49 @@ async function toggleAddOn() {
   }
 }
 
-async function setOrderStatus(o: ShopOrderDTO, status: ShopOrderDTO['status']) {
-  if (!siteId.value) return
-  try {
-    const updated = await contentClient.shopUpdateOrder(siteId.value, o.id, status)
-    const i = orders.value.findIndex(x => x.id === o.id)
-    if (i >= 0) orders.value[i] = updated
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : String(e)
-  }
+/** The fulfillment panel does the saving; the list just takes the fresh row. */
+function replaceOrder(updated: ShopOrderDTO) {
+  const i = orders.value.findIndex(x => x.id === updated.id)
+  if (i >= 0) orders.value[i] = updated
 }
 
-function toggleFulfillment(method: 'pickup' | 'shipping') {
-  if (!resolved.value) return
-  const list = resolved.value.fulfillment.includes(method)
-    ? resolved.value.fulfillment.filter(f => f !== method)
-    : [...resolved.value.fulfillment, method]
-  resolved.value.fulfillment = list.length ? list : ['pickup']
+function addressLines(o: ShopOrderDTO): string[] {
+  const a = o.shippingAddress
+  if (!a) return []
+  return [a.line1, a.line2, [a.city, a.region].filter(Boolean).join(', ') + ' ' + a.postalCode, a.country].filter((x): x is string => !!x && x.trim() !== '')
 }
+
+/* Pickup only, shipping only, or both: one choice instead of two toggles. */
+const FULFILLMENT_MODES = [
+  { value: 'pickup', label: 'Pickup only' },
+  { value: 'shipping', label: 'Shipping only' },
+  { value: 'both', label: 'Pickup and shipping' },
+]
+const fulfillmentMode = computed({
+  get: () => {
+    const f = resolved.value?.fulfillment ?? ['pickup']
+    return f.includes('pickup') && f.includes('shipping') ? 'both' : (f.includes('shipping') ? 'shipping' : 'pickup')
+  },
+  set: (mode: string) => {
+    if (!resolved.value) return
+    resolved.value.fulfillment = mode === 'both' ? ['pickup', 'shipping'] : (mode === 'shipping' ? ['shipping'] : ['pickup'])
+  },
+})
 
 function money(cents?: number, currency?: string) {
   if (cents == null) return ''
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || resolved.value?.currency || 'USD' }).format(cents / 100)
 }
 
-onMounted(load)
-watch(siteId, load)
+/* Products -> Shop is a live link: after load, silently pull in anything on
+   the Products page that isn't sellable yet. The button in the catalog header
+   stays as a manual re-sync. */
+async function loadAndSync() {
+  await load()
+  await syncFromContent()
+}
+onMounted(loadAndSync)
+watch(siteId, loadAndSync)
 </script>
 
 <template>
@@ -201,14 +297,27 @@ watch(siteId, load)
       </div>
 
       <section class="adm-card">
-        <h2 class="adm-h2">Products</h2>
-        <p class="adm-muted adm-mb">Each product appears as a card on your shop page.</p>
+        <div class="shop-cat-head">
+          <div>
+            <h2 class="adm-h2">Products</h2>
+            <p class="adm-muted">Each product appears as a card on your shop page.</p>
+          </div>
+          <button type="button" class="adm-btn adm-btn--sm" :disabled="syncing" @click="syncFromContent">
+            {{ syncing ? 'Importing…' : 'Import from your Products page' }}
+          </button>
+        </div>
+        <p v-if="syncStatus" class="adm-muted adm-mb">{{ syncStatus }}</p>
 
+        <!-- Every category + subcategory already in use, so filing a product is a pick, not a retype. -->
+        <datalist id="shop-category-options">
+          <option v-for="c in categoryOptions" :key="c" :value="c" />
+        </datalist>
         <ul v-if="products.length" class="rm-list">
           <li v-for="p in products" :key="p.id" class="rm-row">
             <input class="adm-input rm-row__sku" v-model="p.sku" placeholder="SKU" />
             <input class="adm-input rm-row__name" v-model="p.name" placeholder="Name" />
             <input class="adm-input rm-row__desc" v-model="p.description" placeholder="Description" />
+            <input class="adm-input rm-row__cat" v-model="p.category" list="shop-category-options" placeholder="Category / Sub" title="Category, then an optional subcategory: Apparel / Hats" />
             <div class="rm-row__price"><MoneyInput v-model="p.priceCents" :currency="resolved?.currency || 'USD'" /></div>
             <div class="rm-row__inv"><NumberInput v-model="p.inventory" :min="-1" unit="stock" /></div>
             <div class="rm-row__img"><ImageInput :model-value="p.imageUrl ?? ''" :site-id="siteId" aspect="1 / 1" @update:model-value="(v: string) => p.imageUrl = v" /></div>
@@ -223,6 +332,7 @@ watch(siteId, load)
           <input class="adm-input rm-row__sku" v-model="newProduct.sku" placeholder="SKU" />
           <input class="adm-input rm-row__name" v-model="newProduct.name" placeholder="Name" />
           <input class="adm-input rm-row__desc" v-model="newProduct.description" placeholder="Description" />
+          <input class="adm-input rm-row__cat" v-model="newProduct.category" list="shop-category-options" placeholder="Category / Sub" title="Category, then an optional subcategory: Apparel / Hats" />
           <div class="rm-row__price"><MoneyInput v-model="newProduct.priceCents" :currency="resolved?.currency || 'USD'" /></div>
           <div class="rm-row__inv"><NumberInput v-model="newProduct.inventory" :min="-1" unit="stock" /></div>
           <div class="rm-row__img"><ImageInput :model-value="newProduct.imageUrl ?? ''" :site-id="siteId" aspect="1 / 1" @update:model-value="(v: string) => newProduct.imageUrl = v" /></div>
@@ -241,11 +351,7 @@ watch(siteId, load)
           <SelectInput v-model="resolved.currency" label="Currency" :options="CURRENCY_OPTIONS" />
           <MoneyInput v-model="resolved.shippingFlatCents" label="Shipping flat rate" :currency="resolved.currency || 'USD'" />
           <div class="adm-field adm-field--full">
-            <span>Fulfillment offered</span>
-            <div class="fulfill-toggles">
-              <ToggleInput :model-value="resolved.fulfillment.includes('pickup')" label="Local pickup" @update:model-value="() => toggleFulfillment('pickup')" />
-              <ToggleInput :model-value="resolved.fulfillment.includes('shipping')" label="Ship to customer" @update:model-value="() => toggleFulfillment('shipping')" />
-            </div>
+            <SegmentedInput v-model="fulfillmentMode" label="How orders are handed over" :options="FULFILLMENT_MODES" hint="Pickup orders are collected in store. Shipping orders take an address at checkout and add the flat rate above." />
           </div>
           <label class="adm-field adm-field--full">
             <span>Pickup instructions (shown after pickup orders)</span>
@@ -268,33 +374,37 @@ watch(siteId, load)
       <section class="adm-card">
         <h2 class="adm-h2">Orders</h2>
         <p v-if="!orders.length" class="adm-muted">No orders yet.</p>
-        <table v-else class="adm-table">
-          <thead>
-            <tr><th>Placed</th><th>Customer</th><th>Items</th><th>Fulfillment</th><th>Total</th><th>Status</th><th /></tr>
-          </thead>
-          <tbody>
-            <tr v-for="o in orders" :key="o.id">
-              <td>{{ new Date(o.createdAt).toLocaleString() }}</td>
-              <td>
-                {{ o.name }}<br />
+        <div v-else class="orders">
+          <article v-for="o in orders" :key="o.id" class="order-card">
+            <header class="order-card__head">
+              <div class="order-card__who">
+                <strong>{{ o.name }}</strong>
                 <small><a :href="`mailto:${o.email}`">{{ o.email }}</a><template v-if="o.phone"> · {{ o.phone }}</template></small>
-              </td>
-              <td>
-                <div v-for="it in o.items" :key="it.productId">{{ it.name }} × {{ it.quantity }}</div>
-              </td>
-              <td>{{ o.fulfillment }}</td>
-              <td>{{ money(o.totalCents, o.currency) }}</td>
-              <td>
+              </div>
+              <div class="order-card__meta">
+                <span class="order-card__when">{{ new Date(o.createdAt).toLocaleString() }}</span>
                 <span class="adm-badge" :class="o.status === 'cancelled' ? 'adm-badge--warn' : (o.status === 'fulfilled' ? 'adm-badge--ok' : 'adm-badge--info')">{{ o.status }}</span>
-              </td>
-              <td class="order-actions">
-                <button v-if="o.status === 'pending'" type="button" class="adm-btn adm-btn--ghost adm-btn--sm" @click="setOrderStatus(o, 'paid')">Mark paid</button>
-                <button v-if="o.status === 'paid'" type="button" class="adm-btn adm-btn--ghost adm-btn--sm" @click="setOrderStatus(o, 'fulfilled')">Fulfill</button>
-                <button v-if="o.status !== 'cancelled' && o.status !== 'fulfilled'" type="button" class="adm-btn adm-btn--ghost adm-btn--sm" @click="setOrderStatus(o, 'cancelled')">Cancel</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+            </header>
+            <div class="order-card__body">
+              <ul class="order-card__items">
+                <li v-for="it in o.items" :key="it.productId">{{ it.name }} <span>× {{ it.quantity }}</span></li>
+              </ul>
+              <div class="order-card__ship">
+                <template v-if="o.fulfillment === 'shipping'">
+                  <span class="order-card__label">Ship to</span>
+                  <div v-for="(line, i) in addressLines(o)" :key="i">{{ line }}</div>
+                </template>
+                <template v-else>
+                  <span class="order-card__label">Local pickup</span>
+                </template>
+                <p v-if="o.notes" class="order-card__note">“{{ o.notes }}”</p>
+              </div>
+              <div class="order-card__total">{{ money(o.totalCents, o.currency) }}</div>
+            </div>
+            <FulfillmentPanel :order="o" :site-id="siteId" @updated="replaceOrder" />
+          </article>
+        </div>
       </section>
     </template>
   </section>
@@ -305,9 +415,14 @@ watch(siteId, load)
 .adm-h2 { margin: 0 0 0.4rem; font-size: 1.05rem; }
 .adm-mb { margin-bottom: 0.75rem; }
 .addon-gate { padding: 1rem 1.1rem; margin-bottom: 1rem; }
+.shop-cat-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem;
+}
+.shop-cat-head .adm-muted { margin: 0; }
 
 .rm-list { list-style: none; padding: 0; margin: 0 0 0.75rem; display: flex; flex-direction: column; gap: 0.35rem; }
-.rm-row { display: grid; grid-template-columns: 7rem 10rem 1fr 6rem 5rem 1.3fr 3rem auto auto; gap: 0.3rem; align-items: center; }
+.rm-row { display: grid; grid-template-columns: 7rem 10rem 1fr 9rem 6rem 5rem 1.3fr 3rem auto auto; gap: 0.3rem; align-items: center; }
 .rm-row--new { padding-top: 0.5rem; border-top: 1px dashed var(--adm-border); }
 .rm-row__active { display: flex; align-items: center; gap: 0.25rem; font-size: 0.78rem; color: var(--adm-text-subtle); }
 
@@ -321,5 +436,20 @@ watch(siteId, load)
 .adm-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .adm-table th, .adm-table td { text-align: left; padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--adm-border); vertical-align: top; }
 .adm-table th { color: var(--adm-text-subtle); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
-.order-actions { display: flex; flex-direction: column; gap: 0.25rem; }
+/* Orders as cards: each one carries its own fulfillment tracker. */
+.orders { display: grid; gap: 0.9rem; }
+.order-card { padding: 0.95rem 1.1rem 1rem; border: 1px solid var(--adm-border); border-radius: var(--adm-radius); background: var(--adm-surface-2); }
+.order-card__head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: flex-start; margin-bottom: 0.7rem; }
+.order-card__who { display: grid; gap: 0.1rem; }
+.order-card__who small { color: var(--adm-text-muted); }
+.order-card__meta { display: flex; align-items: center; gap: 0.6rem; }
+.order-card__when { font-size: 0.8rem; color: var(--adm-text-muted); }
+.order-card__body { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 1rem; align-items: start; font-size: 0.88rem; padding-bottom: 0.85rem; }
+@media (max-width: 720px) { .order-card__body { grid-template-columns: 1fr; } }
+.order-card__items { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.2rem; }
+.order-card__items span { color: var(--adm-text-muted); }
+.order-card__ship { color: var(--adm-text); line-height: 1.4; }
+.order-card__label { display: block; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--adm-text-muted); margin-bottom: 0.2rem; }
+.order-card__note { margin: 0.5rem 0 0; color: var(--adm-text-muted); font-style: italic; }
+.order-card__total { font-weight: 700; font-size: 1rem; white-space: nowrap; }
 </style>

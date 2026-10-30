@@ -29,12 +29,12 @@ const IMG = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=c
 // ── Shop (Vault · E-Shop add-on) ─────────────────────────────────────────
 
 const shopProducts = [
-  { id: 'demo-p1', sku: 'CANDLE-01', name: 'Juniper Ridge Candle', description: 'Hand-poured soy candle, 40-hour burn.', priceCents: 2400, currency: 'USD', imageUrl: IMG('photo-1602874801007-bd458bb1b8b6'), inventory: 14, active: true, sortOrder: 1 },
-  { id: 'demo-p2', sku: 'MUG-01', name: 'Stoneware Mug', description: 'Wheel-thrown, dishwasher safe, 12 oz.', priceCents: 3200, currency: 'USD', imageUrl: IMG('photo-1514228742587-6b1558fcca3d'), inventory: 22, active: true, sortOrder: 2 },
-  { id: 'demo-p3', sku: 'TOTE-01', name: 'Waxed Canvas Tote', description: 'Heavy 18 oz canvas with leather straps.', priceCents: 5800, currency: 'USD', imageUrl: IMG('photo-1544816155-12df9643f363'), inventory: 9, active: true, sortOrder: 3 },
-  { id: 'demo-p4', sku: 'PRINT-01', name: 'Fisher’s Peak Print', description: 'Archival giclée, 12×16, signed.', priceCents: 4500, currency: 'USD', imageUrl: IMG('photo-1465101162946-4377e57745c3'), inventory: 30, active: true, sortOrder: 4 },
-  { id: 'demo-p5', sku: 'SOAP-01', name: 'Cedar & Sage Soap', description: 'Cold-process bar, essential oils only.', priceCents: 900, currency: 'USD', imageUrl: IMG('photo-1600857544200-b2f666a9a2ec'), inventory: 48, active: true, sortOrder: 5 },
-  { id: 'demo-p6', sku: 'HOODIE-01', name: 'Trail Hoodie', description: 'Midweight fleece, embroidered logo.', priceCents: 6400, currency: 'USD', imageUrl: IMG('photo-1556821840-3a63f95609a7'), inventory: 0, active: true, sortOrder: 6 },
+  { id: 'demo-p1', sku: 'CANDLE-01', category: 'Home / Candles', name: 'Juniper Ridge Candle', description: 'Hand-poured soy candle, 40-hour burn.', priceCents: 2400, currency: 'USD', imageUrl: IMG('photo-1602874801007-bd458bb1b8b6'), inventory: 14, active: true, sortOrder: 1 },
+  { id: 'demo-p2', sku: 'MUG-01', category: 'Home / Kitchen', name: 'Stoneware Mug', description: 'Wheel-thrown, dishwasher safe, 12 oz.', priceCents: 3200, currency: 'USD', imageUrl: IMG('photo-1514228742587-6b1558fcca3d'), inventory: 22, active: true, sortOrder: 2 },
+  { id: 'demo-p3', sku: 'TOTE-01', category: 'Apparel / Bags', name: 'Waxed Canvas Tote', description: 'Heavy 18 oz canvas with leather straps.', priceCents: 5800, currency: 'USD', imageUrl: IMG('photo-1544816155-12df9643f363'), inventory: 9, active: true, sortOrder: 3 },
+  { id: 'demo-p4', sku: 'PRINT-01', category: 'Home / Art', name: 'Fisher’s Peak Print', description: 'Archival giclée, 12×16, signed.', priceCents: 4500, currency: 'USD', imageUrl: IMG('photo-1465101162946-4377e57745c3'), inventory: 30, active: true, sortOrder: 4 },
+  { id: 'demo-p5', sku: 'SOAP-01', category: 'Home / Bath', name: 'Cedar & Sage Soap', description: 'Cold-process bar, essential oils only.', priceCents: 900, currency: 'USD', imageUrl: IMG('photo-1600857544200-b2f666a9a2ec'), inventory: 48, active: true, sortOrder: 5 },
+  { id: 'demo-p6', sku: 'HOODIE-01', category: 'Apparel / Tops', name: 'Trail Hoodie', description: 'Midweight fleece, embroidered logo.', priceCents: 6400, currency: 'USD', imageUrl: IMG('photo-1556821840-3a63f95609a7'), inventory: 0, active: true, sortOrder: 6 },
 ]
 
 const SHOP_SHIPPING_CENTS = 800
@@ -108,6 +108,10 @@ const demoMenu = [
   { id: 'demo-m5', sku: 'MN-03', name: 'Mushroom Pozole', description: 'Hominy, guajillo broth, all the fixings. Vegan.', priceCents: 1600, category: 'Mains', imageUrl: IMG('photo-1547592180-85f173990554'), active: true, sortOrder: 5 },
   { id: 'demo-m6', sku: 'DS-01', name: 'Sopapillas & Honey', description: 'Fried to order, local honey, cinnamon sugar.', priceCents: 700, category: 'Desserts', imageUrl: IMG('photo-1551024601-bec78aea704b'), active: true, sortOrder: 6 },
   { id: 'demo-m7', sku: 'DR-01', name: 'Prickly Pear Agua Fresca', description: 'House-made, not too sweet.', priceCents: 450, category: 'Drinks', imageUrl: IMG('photo-1544145945-f90425340c7e'), active: true, sortOrder: 7 },
+  // One dish in two sizes: shows size grouping in the demo, and exercises the
+  // path that collapses legacy per-size items into one card with size buttons.
+  { id: 'demo-m8', sku: 'MN-04', name: 'Green Chile Stew (Cup)', description: 'Pork, potatoes, plenty of Hatch.', priceCents: 700, category: 'Mains', imageUrl: IMG('photo-1583224944844-5b268c057b72'), active: true, sortOrder: 8 },
+  { id: 'demo-m9', sku: 'MN-05', name: 'Green Chile Stew (Bowl)', description: '', priceCents: 1100, category: 'Mains', imageUrl: IMG('photo-1583224944844-5b268c057b72'), active: true, sortOrder: 9 },
 ]
 
 // ── Lodging (Hearth · Reservations add-on) ───────────────────────────────
@@ -155,6 +159,10 @@ function icsDataUrl(title: string, startIso: string, durationMinutes: number): s
 
 const latency = (ms = 350) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
+/* Orders placed in this session, so the demo's /order/:id page has something to show. */
+const demoShopOrders = new Map<string, ShopOrderDTO>()
+const demoMealOrders = new Map<string, MealOrderDTO>()
+
 // ── The client ───────────────────────────────────────────────────────────
 
 export const demoClient = {
@@ -189,15 +197,28 @@ export const demoClient = {
     }).filter(i => i.quantity > 0)
     const subtotalCents = items.reduce((s, i) => s + i.lineTotalCents, 0)
     const shippingCents = payload.fulfillment === 'shipping' ? SHOP_SHIPPING_CENTS : 0
-    return {
+    const order: ShopOrderDTO = {
       id: demoId('order'),
       name: payload.name, email: payload.email, phone: payload.phone, notes: payload.notes,
       fulfillment: payload.fulfillment, shippingAddress: payload.shippingAddress,
       items, subtotalCents, shippingCents,
       totalCents: subtotalCents + shippingCents,
-      currency: 'USD', status: 'pending', createdAt: new Date().toISOString(),
+      currency: 'USD', status: 'paid', createdAt: new Date().toISOString(),
+      fulfillmentStatus: 'received', fulfillmentHistory: [],
+      pickupInstructions: 'Collect from the counter any day 10am to 6pm. Bring your order number.',
     }
+    demoShopOrders.set(order.id, order)
+    return order
   },
+
+  shopGetOrder: async (id: string): Promise<ShopOrderDTO> => {
+    await latency()
+    const o = demoShopOrders.get(id)
+    if (!o) throw new Error('Order not found')
+    return { ...o }
+  },
+
+  shopConfirmOrder: async (id: string): Promise<ShopOrderDTO> => demoClient.shopGetOrder(id),
 
   // --- Ticketing ---
   ticketingListEvents: async (_siteSlug: string): Promise<EventDTO[]> => {
@@ -252,6 +273,11 @@ export const demoClient = {
       currency: 'USD',
       categories: ['Starters', 'Mains', 'Desserts', 'Drinks'],
       items: demoMenu.map(m => ({ ...m, currency: 'USD' })),
+      fulfillment: ['pickup', 'delivery'] as Array<'pickup' | 'delivery'>,
+      deliveryFeeCents: 400,
+      deliveryMinimumCents: 1500,
+      deliveryArea: 'Within Trinidad city limits',
+      deliveryInstructions: 'The driver will text when they are a few minutes out.',
     }
   },
 
@@ -269,6 +295,8 @@ export const demoClient = {
     siteSlug: string; name: string; email: string; phone?: string; notes?: string
     pickupAt: string
     items: Array<{ menuItemId: string; quantity: number; notes?: string }>
+    fulfillment?: 'pickup' | 'delivery'
+    deliveryAddress?: { line1: string; line2?: string; city: string; region?: string; postalCode: string }
   }): Promise<MealOrderDTO> => {
     await latency(600)
     const items = payload.items.map(i => {
@@ -281,14 +309,33 @@ export const demoClient = {
       }
     })
     const subtotalCents = items.reduce((s, i) => s + i.lineTotalCents, 0)
-    return {
+    const delivery = payload.fulfillment === 'delivery'
+    const deliveryFeeCents = delivery ? 400 : 0
+    const order: MealOrderDTO = {
       id: demoId('meal'),
       name: payload.name, email: payload.email, phone: payload.phone, notes: payload.notes,
       pickupAt: payload.pickupAt, items, subtotalCents,
-      totalCents: subtotalCents, currency: 'USD',
-      status: 'confirmed', createdAt: new Date().toISOString(),
+      fulfillment: delivery ? 'delivery' : 'pickup',
+      deliveryAddress: delivery ? payload.deliveryAddress : null,
+      deliveryFeeCents,
+      totalCents: subtotalCents + deliveryFeeCents, currency: 'USD',
+      status: 'confirmed', paymentStatus: 'paid', createdAt: new Date().toISOString(),
+      pickupInstructions: 'Come to the counter and give your name.',
+      deliveryInstructions: 'The driver will text when they are a few minutes out.',
+      timezone: DEMO_TZ,
     }
+    demoMealOrders.set(order.id, order)
+    return order
   },
+
+  orderingGetOrder: async (id: string): Promise<MealOrderDTO> => {
+    await latency()
+    const o = demoMealOrders.get(id)
+    if (!o) throw new Error('Order not found')
+    return { ...o }
+  },
+
+  orderingConfirmOrder: async (id: string): Promise<MealOrderDTO> => demoClient.orderingGetOrder(id),
 
   // --- Lodging ---
   lodgingAvailability: async (_siteSlug: string, checkIn: string, checkOut: string, partySize: number) => {

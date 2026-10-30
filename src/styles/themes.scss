@@ -46,3 +46,37 @@
   font-size: 0.95rem;
 }
 [data-theme='heritage'] .ap-event-status::before { content: '— '; }
+
+/* ── Studio · the next-show plate and the event index ──────────────── */
+[data-theme='studio'] .ap-marquee-hero .ap-marquee-hero__plate {
+  left: auto; right: -14%; bottom: -8%;
+  max-width: min(72%, 320px);
+  border-radius: 2px;
+  border-color: var(--ap-line);
+  box-shadow: 0 40px 80px -48px color-mix(in srgb, var(--ap-ink) 55%, transparent);
+}
+[data-theme='studio'] .ap-marquee-hero .ap-marquee-hero__plate-title {
+  font-family: var(--ap-font-accent);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+  letter-spacing: 0;
+}
+[data-theme='studio'] .ap-events .ap-event-row__title { font-weight: 500; }
+[data-theme='studio'] .ap-events .ap-event-row__blurb { font-family: var(--ap-font-accent); font-style: italic; font-size: 1.02rem; color: var(--ap-ink-muted); }
+[data-theme='studio'] .ap-series .ap-series__grid { gap: 2px; }
+@media (max-width: 760px) {
+  [data-theme='studio'] .ap-marquee-hero .ap-marquee-hero__plate { right: 0.75rem; bottom: 0.75rem; }
+}
+
+/* ── Atlas · plate as a ledger card, rows as index entries ──────────── */
+[data-theme='atlas'] .ap-marquee-hero .ap-marquee-hero__plate {
+  left: 6px; bottom: 6px; border-radius: 0; border: 0; border-top: 1px solid var(--ap-ink); border-right: 1px solid var(--ap-ink);
+  max-width: min(80%, 380px);
+}
+[data-theme='atlas'] .ap-marquee-hero .ap-hero__caption { display: none; }
+[data-theme='atlas'] .ap-marquee-hero .ap-marquee-hero__plate-k { color: var(--ap-ink-muted); }
+
+/* Studio: when the next-show plate hangs on the photo, the offset second
+   print would collide with it, so the plate takes that corner alone. */
+[data-theme='studio'] .ap-marquee-hero.has-next .ap-hero__media.is-carousel .ap-hero__frame:nth-of-type(2) { display: none !important; }

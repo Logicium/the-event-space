@@ -3,11 +3,11 @@ import { computed, ref } from 'vue'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import type { EventItem } from '../../config/site.config'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   eyebrow?: string
   title?: string
   events: EventItem[]
-}>()
+}>(), { title: 'On the calendar' })
 
 const today = new Date()
 const cursor = ref<{ year: number; month: number }>({ year: today.getFullYear(), month: today.getMonth() })
@@ -74,7 +74,7 @@ const todayIso = isoOf(today)
     <div class="ap-container">
       <header class="ap-section-head">
         <span v-if="eyebrow" class="ap-eyebrow">{{ eyebrow }}</span>
-        <h2>{{ title || 'On the calendar' }}</h2>
+        <h2>{{ title }}</h2>
       </header>
 
       <div class="ap-calendar__bar">

@@ -7,7 +7,7 @@ import { useSectionFlash } from '../composables/useSectionFlash'
 import { useContentEditor } from '../composables/useContentEditor'
 import { usePreferences } from '../composables/usePreferences'
 import { useAdminAuthStore } from '../platform/adminAuthStore'
-import { useSiteContentStore } from '../platform/siteContentStore'
+import { useSiteContentStore, applyDeep } from '../platform/siteContentStore'
 import { THEME_LIST } from '../themes'
 import { SWATCH_FAMILIES, resolvePresetSwatch, type SwatchFamilyCard } from '../themes/swatches'
 import { SWATCH_THEORIES } from '../themes/tokens'
@@ -36,7 +36,7 @@ const {
   heroStyle, footerStyle,
   contactStyle, hoursStyle, galleryStyle, reviewsStyle, subheroStyle,
   siteStyle, aboutStyle, navStyle,
-  alignment,
+  alignment, archetype,
   setTheme, setSwatch, setVariant,
   setHeroStyle, setFooterStyle,
   setContactStyle, setHoursStyle, setGalleryStyle, setReviewsStyle, setSubheroStyle,
@@ -58,7 +58,7 @@ function pickVariant(v: (typeof VARIANTS)[number]) {
   setVariant(v)
 }
 const HERO_STYLES = ['1', '2', '3', '4', '5', '6'] as const
-const HERO_STYLE_LABELS: Record<string, string> = { '1': 'Default', '2': 'Overlay', '3': 'Broadsheet', '4': 'Split', '5': 'Marquee', '6': 'Float' }
+const HERO_STYLE_LABELS: Record<string, string> = { '1': 'Signature', '2': 'Overlay', '3': 'Broadsheet', '4': 'Split', '5': 'Marquee', '6': 'Float' }
 const FOOTER_STYLES = ['1', '2', '3', '4', '5'] as const
 const FOOTER_STYLE_LABELS: Record<string, string> = { '1': 'Classic', '2': 'Editorial', '3': 'Billboard', '4': 'Minimal', '5': 'Dark Stage' }
 const CONTACT_STYLES = ['1', '2', '3', '4', '5'] as const
@@ -66,19 +66,29 @@ const CONTACT_STYLE_LABELS: Record<string, string> = { '1': 'Studio Split', '2':
 const HOURS_STYLES = ['1', '2', '3', '4', '5'] as const
 const HOURS_STYLE_LABELS: Record<string, string> = { '1': 'Ledger', '2': 'Marquee', '3': 'Pillar', '4': 'Tiles', '5': 'Ribbon' }
 const GALLERY_STYLES = ['1', '2', '3', '4', '5'] as const
-const GALLERY_STYLE_LABELS: Record<string, string> = { '1': 'Default', '2': 'Mosaic', '3': 'Marquee', '4': 'Strip', '5': 'Polaroid' }
+const GALLERY_STYLE_LABELS: Record<string, string> = { '1': 'Signature', '2': 'Mosaic', '3': 'Marquee', '4': 'Strip', '5': 'Polaroid' }
 const REVIEWS_STYLES = ['1', '2', '3', '4', '5'] as const
-const REVIEWS_STYLE_LABELS: Record<string, string> = { '1': 'Default', '2': 'Spotlight', '3': 'Carousel', '4': 'Wall', '5': 'Ticker' }
+const REVIEWS_STYLE_LABELS: Record<string, string> = { '1': 'Signature', '2': 'Spotlight', '3': 'Carousel', '4': 'Wall', '5': 'Ticker' }
 const SUBHERO_STYLES = ['1', '2', '3', '4', '5'] as const
 const SUBHERO_STYLE_LABELS: Record<string, string> = { '1': 'Compact', '2': 'Banner', '3': 'Centered', '4': 'Broadsheet', '5': 'Split' }
 const ABOUT_STYLES = ['1', '2', '3', '4'] as const
 const ABOUT_STYLE_LABELS: Record<string, string> = { '1': 'Classic', '2': 'Editorial', '3': 'Ledger', '4': 'Poster' }
+/* Shop sites only: the header's Shop link as plain link or category dropdown.
+   This is CONTENT (it depends on the owner's categories), so it lives on the
+   live config and publishes with the theme snapshot rather than as a style axis. */
+const NAV_MENUS = ['links', 'catalog'] as const
+const NAV_MENU_LABELS: Record<string, string> = { links: 'Links', catalog: 'Catalog menu' }
+const navMenu = ref<'links' | 'catalog'>(((content.liveConfig as { navMenu?: string } | null)?.navMenu === 'catalog') ? 'catalog' : 'links')
+function setNavMenu(m: 'links' | 'catalog') {
+  navMenu.value = m
+  if (content.liveConfig) applyDeep(content.liveConfig as Record<string, unknown>, { navMenu: m })
+}
 const NAV_STYLES = ['1', '2', '3', '4'] as const
 const NAV_STYLE_LABELS: Record<string, string> = { '1': 'Classic', '2': 'Editorial', '3': 'Command', '4': 'Pill' }
-const SITE_STYLES = ['1', '2', '3'] as const
+const SITE_STYLES = ['1', '2', '3', '4', '5'] as const
 // project = wizard: Site style
 const SITE_STYLE_LABEL = 'Site style'
-const SITE_STYLE_LABELS: Record<string, string> = { '1': 'Default', '2': 'Alt', '3': 'Bold' }
+const SITE_STYLE_LABELS: Record<string, string> = { '1': 'Signature', '2': 'Alt', '3': 'Bold', '4': 'Ledger', '5': 'Tiles' }
 
 type Tab = 'edit' | 'theme' | 'color' | 'style' | 'sections'
 const TAB_STORAGE_KEY = 'ap-switcher-tab'
@@ -426,6 +436,7 @@ const themeSnapshot = computed(() => ({
   swatch: swatchName.value,
   variant: variant.value,
   alignment: alignment.value,
+  ...(archetype.value === 'shop' ? { navMenu: navMenu.value } : {}),
   style: {
     heroStyle: heroStyle.value,
     subheroStyle: subheroStyle.value,
@@ -621,7 +632,7 @@ watch(() => prefs.value.themeAutosave, (on) => {
         </div>
 
         <!-- Edit content -->
-        <div v-show="tab === 'edit'" class="ap-switcher__panel">
+        <div v-show="tab === 'edit'" class="ap-switcher__panel ap-scroll-native">
           <div class="ap-switcher__span">
             <button
               type="button"
@@ -702,7 +713,7 @@ watch(() => prefs.value.themeAutosave, (on) => {
         </div>
 
         <!-- Theme -->
-        <div v-show="tab === 'theme'" class="ap-switcher__panel">
+        <div v-show="tab === 'theme'" class="ap-switcher__panel ap-scroll-native">
           <div>
             <p class="ap-eyebrow">Theme</p>
             <div class="ap-switcher__row">
@@ -770,10 +781,10 @@ watch(() => prefs.value.themeAutosave, (on) => {
         </div>
 
         <!-- Color Studio -->
-        <div v-show="tab === 'color'" class="ap-switcher__panel">
+        <div v-show="tab === 'color'" class="ap-switcher__panel ap-scroll-native">
           <div class="ap-switcher__span">
             <div class="ap-lab__modes-row">
-              <span class="ap-eyebrow">Every palette comes in both</span>
+              <span class="ap-eyebrow">Palettes</span>
               <div class="ap-modes" role="group" aria-label="Light or dark palette">
                 <button type="button" class="ap-modes__btn" :class="{ 'is-active': pickerMode === 'light' }" @click="setPickerMode('light')"><Sun :size="13" /> Light</button>
                 <button type="button" class="ap-modes__btn" :class="{ 'is-active': pickerMode === 'dark' }" @click="setPickerMode('dark')"><Moon :size="13" /> Dark</button>
@@ -781,9 +792,11 @@ watch(() => prefs.value.themeAutosave, (on) => {
             </div>
             <div v-for="grp in theoryGroups" :key="grp.id" class="ap-lab__theory">
               <div class="ap-lab__theory-head">
-                <span class="ap-lab__theory-name">{{ grp.label }}</span>
+                <!-- The one-line group description lives in the tooltip now:
+                     six visible sentences made the docked panel taller than a
+                     laptop screen, and the swatches already show the mood. -->
+                <span class="ap-lab__theory-name" :title="grp.subtext">{{ grp.label }}</span>
               </div>
-              <p class="ap-lab__theory-sub">{{ grp.subtext }}</p>
               <div class="ap-lab__swatches">
                 <button
                   v-for="f in grp.items"
@@ -808,8 +821,7 @@ watch(() => prefs.value.themeAutosave, (on) => {
             <!-- My palettes -->
             <div class="ap-lab__theory ap-lab__theory--mine">
               <div class="ap-lab__theory-head">
-                <span class="ap-lab__theory-name">My palettes</span>
-                <span class="ap-lab__theory-harmony">Built &amp; saved by you</span>
+                <span class="ap-lab__theory-name" title="Palettes you build below are saved here">My palettes</span>
               </div>
               <div v-if="customSwatches.length" class="ap-lab__swatches">
                 <div
@@ -831,7 +843,7 @@ watch(() => prefs.value.themeAutosave, (on) => {
                   </button>
                 </div>
               </div>
-              <p v-else class="ap-switcher__hint">No saved palettes yet. Build one below.</p>
+              <p v-else class="ap-switcher__hint">None yet.</p>
 
               <button v-if="!builderOpen" type="button" class="ap-switcher__chip ap-switcher__chip--icon ap-lab__new" @click="builderOpen = true">
                 <Plus :size="14" /> New palette
@@ -890,7 +902,7 @@ watch(() => prefs.value.themeAutosave, (on) => {
         </div>
 
         <!-- Style -->
-        <div v-show="tab === 'style'" class="ap-switcher__panel">
+        <div v-show="tab === 'style'" class="ap-switcher__panel ap-scroll-native">
           <div class="ap-switcher__span">
             <button type="button" class="ap-switcher__group-head" @click="jumpTo('hero')">
               <span class="ap-eyebrow">Hero style</span>
@@ -917,6 +929,12 @@ watch(() => prefs.value.themeAutosave, (on) => {
             <div class="ap-switcher__row">
               <button v-for="s in NAV_STYLES" :key="s" type="button" class="ap-switcher__chip" :class="{ 'is-active': navStyle === s }" @click="setNavStyle(s)">{{ NAV_STYLE_LABELS[s] }}</button>
             </div>
+            <template v-if="archetype === 'shop'">
+              <p class="ap-eyebrow ap-switcher__sub-eyebrow">Shop link</p>
+              <div class="ap-switcher__row">
+                <button v-for="m in NAV_MENUS" :key="m" type="button" class="ap-switcher__chip" :class="{ 'is-active': navMenu === m }" @click="setNavMenu(m)">{{ NAV_MENU_LABELS[m] }}</button>
+              </div>
+            </template>
           </div>
           <div class="ap-switcher__span">
             <button type="button" class="ap-switcher__group-head" @click="jumpTo('footer')">
@@ -939,7 +957,7 @@ watch(() => prefs.value.themeAutosave, (on) => {
         </div>
 
         <!-- Sections -->
-        <div v-show="tab === 'sections'" class="ap-switcher__panel">
+        <div v-show="tab === 'sections'" class="ap-switcher__panel ap-scroll-native">
           <div class="ap-switcher__span">
             <button type="button" class="ap-switcher__group-head" @click="jumpTo('about')">
               <span class="ap-eyebrow">About section</span>
@@ -1164,6 +1182,15 @@ watch(() => prefs.value.themeAutosave, (on) => {
   display: flex; flex-direction: column;
   opacity: 0;
   transition: opacity 220ms ease;
+}
+/* Docked: lay the content out at the OPEN width from the first frame. The
+   host's width animates from the pill up to 640px, and the height is
+   measured right after open; measured while the host is still narrow, the
+   text wraps and the panel is sized for a column it will never be. Fixing
+   the wrap's width means every measurement is taken at the final layout;
+   the growing host simply clips it (overflow hidden) until it catches up. */
+.ap-switcher:not(.is-detached):not(.is-fullscreen) .ap-switcher__panel-wrap {
+  width: min(640px, calc(100vw - 2rem));
 }
 /* Fade panel contents IN after width AND part of height have grown; fade
    OUT immediately on close so it clears before height collapses. */
@@ -1401,6 +1428,18 @@ watch(() => prefs.value.themeAutosave, (on) => {
   gap: 0.9rem 1.25rem;
   animation: ap-switcher-fade 360ms ease both;
 }
+/* Docked panels cap at the viewport and scroll inside. The expand region
+   animates to the measured panel height, so without this cap a tall tab
+   (the Color Studio on a laptop) grows past the screen and, with the
+   expand's overflow hidden, everything past the fold is simply unreachable.
+   The cap keeps the measurement itself under the viewport: 8rem covers the
+   dock offset, the header row and panel padding. Detached and fullscreen
+   windows manage their own height and scrolling. */
+.ap-switcher:not(.is-detached):not(.is-fullscreen) .ap-switcher__panel {
+  max-height: calc(100dvh - 8rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 @keyframes ap-switcher-fade {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: none; }
@@ -1472,37 +1511,26 @@ watch(() => prefs.value.themeAutosave, (on) => {
    Theory groups render as titled clusters; each swatch is a tile painted
    in its own SURFACE color (the background is the point), with primary +
    accent dots and the palette name set in its own ink. */
-.ap-lab__theory { margin-bottom: 1rem; }
+.ap-switcher__sub-eyebrow { margin-top: 0.6rem; }
+.ap-lab__theory { margin-bottom: 0.6rem; }
 .ap-lab__theory--mine {
   margin-bottom: 0;
-  padding-top: 0.85rem;
+  padding-top: 0.6rem;
   border-top: 1px dashed color-mix(in srgb, var(--ap-line) 80%, transparent);
 }
 .ap-lab__theory-head {
   display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;
+  margin-bottom: 0.3rem;
 }
 .ap-lab__theory-name {
   font-size: 0.72rem; font-weight: 700;
   letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--ap-ink);
 }
-.ap-lab__theory-harmony {
-  font-size: 0.68rem; color: var(--ap-ink-muted);
-  font-style: italic;
-}
-/* One-line category subtext — the single line of meaning per group. */
-.ap-lab__theory-sub {
-  margin: 0.1rem 0 0.5rem;
-  font-size: 0.72rem; line-height: 1.4;
-  color: var(--ap-ink-muted);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 100%;
-}
-
 /* Studio-wide light/dark mode toggle */
 .ap-lab__modes-row {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 0.6rem; margin-bottom: 0.85rem;
+  gap: 0.6rem; margin-bottom: 0.6rem;
 }
 .ap-switcher__color-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -1537,7 +1565,7 @@ watch(() => prefs.value.themeAutosave, (on) => {
 .ap-lab__swatch {
   position: relative;
   display: flex; align-items: center; gap: 0.45rem;
-  padding: 0.5rem 0.6rem;
+  padding: 0.42rem 0.55rem;
   border: 1.5px solid;
   border-radius: var(--ap-radius, 8px);
   cursor: pointer;

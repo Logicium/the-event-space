@@ -1,8 +1,88 @@
 {
   "template": "marquee",
   "license": "Unsplash License",
-  "generatedAt": "2026-07-01T03:08:37.049Z",
+  "generatedAt": "2026-09-22T04:02:45.504Z",
   "photos": [
+    {
+      "file": "show-07.jpg",
+      "photographer": "Filip Andrejevic",
+      "photographerUrl": "https://unsplash.com/@fandrejevic?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/people-watching-band-performing-on-stage-QmX5lw8StoQ?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "QmX5lw8StoQ",
+      "alt": "Stage lights over a full house"
+    },
+    {
+      "file": "show-08.jpg",
+      "photographer": "Priyanka Chechi",
+      "photographerUrl": "https://unsplash.com/@priyankachechi29?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/musicians-perform-live-in-a-dimly-lit-jazz-club-9zh8fSUQb8w?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "9zh8fSUQb8w",
+      "alt": "Late set, jazz trio"
+    },
+    {
+      "file": "show-09.jpg",
+      "photographer": "fatma jarghon",
+      "photographerUrl": "https://unsplash.com/@fatmajarghon?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/a-row-of-red-seats-in-a-theater-8ELU74vnhPg?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "8ELU74vnhPg",
+      "alt": "The house before doors"
+    },
+    {
+      "file": "show-10.jpg",
+      "photographer": "Brunxs",
+      "photographerUrl": "https://unsplash.com/@brunxs?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/low-light-stage-microphone-photography-dtqlaz4HyHw?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "dtqlaz4HyHw",
+      "alt": "Comedy night"
+    },
+    {
+      "file": "show-11.jpg",
+      "photographer": "Natalia Gusakova",
+      "photographerUrl": "https://unsplash.com/@nataliaraylenegusakova?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/art-exhibition-with-paintings-displayed-on-walls-LzsqOjaRS7w?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "LzsqOjaRS7w",
+      "alt": "Opening night in the gallery"
+    },
+    {
+      "file": "show-12.jpg",
+      "photographer": "Jake Hills",
+      "photographerUrl": "https://unsplash.com/@jakehills?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/cinema-audience-in-dark-theater-23LET4Hxj_U?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "23LET4Hxj_U",
+      "alt": "Film series screening"
+    },
+    {
+      "file": "show-13.jpg",
+      "photographer": "Gabriel Rodrigues",
+      "photographerUrl": "https://unsplash.com/@gabrielrodriguesoficial?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/a-man-sitting-on-a-chair-playing-a-guitar-p6V49LDtWA4?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "p6V49LDtWA4",
+      "alt": "Songwriter in residence"
+    },
+    {
+      "file": "show-14.jpg",
+      "photographer": "Barney Goodman",
+      "photographerUrl": "https://unsplash.com/@bgoodpic?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/circus-tents-with-colourful-festival-flags-iKlpqFZO958?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "iKlpqFZO958",
+      "alt": "Festival weekend, main tent"
+    },
+    {
+      "file": "show-15.jpg",
+      "photographer": "Hulki Okan Tabak",
+      "photographerUrl": "https://unsplash.com/@hulkiokantabak?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/woman-dancing-on-stage-under-light-GKx96wY_MoA?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "GKx96wY_MoA",
+      "alt": "Touring dance company"
+    },
+    {
+      "file": "show-16.jpg",
+      "photographer": "Quincy Rose",
+      "photographerUrl": "https://unsplash.com/@quincyrose?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/old-brick-building-with-marquee-advertising-shows-movie-theater-sign-TPzDz3EWUKY?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "TPzDz3EWUKY",
+      "alt": "The 1924 brick front"
+    },
     {
       "file": "hero-marquee.jpg",
       "photographer": "Aditya Bnrd",
@@ -130,6 +210,14 @@
       "photoUrl": "https://unsplash.com/photos/bokeh-photography-of-condenser-microphone-Y20JJ_ddy9M?utm_source=Apotome%20Archetypes&utm_medium=referral",
       "unsplashId": "Y20JJ_ddy9M",
       "alt": "Open mic night"
+    },
+    {
+      "file": "series-matinee.jpg",
+      "photographer": "yang miao",
+      "photographerUrl": "https://unsplash.com/@yangmiao?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "photoUrl": "https://unsplash.com/photos/a-black-and-white-photo-of-a-group-of-people-in-costume-FvrMfuJci9I?utm_source=Apotome%20Archetypes&utm_medium=referral",
+      "unsplashId": "FvrMfuJci9I",
+      "alt": "Saturday family matinee"
     },
     {
       "file": "performer-rosalind.jpg",

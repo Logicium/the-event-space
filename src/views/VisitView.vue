@@ -9,26 +9,26 @@ import VenueInfoSection from '../components/sections/VenueInfoSection.vue'
 <template>
   <HeroSection
     subpage
-    eyebrow="Visit"
-    title="Plan your night out"
-    subtitle="The basics for getting here, getting in, and getting comfortable."
+    :eyebrow="siteConfig.sections.visitPage.eyebrow"
+    :title="siteConfig.sections.visitPage.title"
+    :subtitle="siteConfig.sections.visitPage.subtitle"
     :image="siteConfig.photos.about.src"
     :image-alt="siteConfig.photos.about.alt"
   />
   <VenueInfoSection
-    eyebrow="The venue"
-    title="What to expect"
+    :eyebrow="siteConfig.sections.visitPage.venueEyebrow"
+    :title="siteConfig.sections.visitPage.venueTitle"
     :intro="siteConfig.blurb"
     :venue="siteConfig.venue"
   />
   <HoursSection
-    eyebrow="Hours"
-    title="When we're open"
+    :eyebrow="siteConfig.sections.visitPage.hoursEyebrow"
+    :title="siteConfig.sections.visitPage.hoursTitle"
     :hours="siteConfig.hours"
   />
   <ContactSection
-    eyebrow="Find us"
-    title="Get in touch"
+    :eyebrow="siteConfig.sections.visitPage.contactEyebrow"
+    :title="siteConfig.sections.visitPage.contactTitle"
     :address="siteConfig.contact.address"
     :phone="siteConfig.contact.phone"
     :email="siteConfig.contact.email"
